@@ -2,7 +2,8 @@ require("dotenv").config();
 
 const dev = {
   database: {
-    tvshowsUrl: process.env.TVSHOWS_DB,
+    tvshowsUrlLocal: process.env.TVSHOWS_DB,
+    tvshowsUrlRemote: process.env.TVSHOWS_REMOTE,
   },
   app: {
     serverPort: process.env.SERVER_PORT,
