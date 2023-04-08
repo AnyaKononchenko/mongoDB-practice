@@ -1,31 +1,74 @@
-const Tvshow = require("../models/tvshows");
+const Tvshow = require("../models/tvshowModel");
 const { v4: uuidv4 } = require("uuid");
 
 const getAllTvshows = async (req, res) => {
   try {
-    const tvshows = await Tvshow.find(
-      {},
-      { title: 1, release: 1, seasons: 1, genre: 1, id: 1, _id: 0 } // basically SELECT: defining fields you want to display
-    );
-    res.status(200).json({ message: "success: returned all tvshows", tvshows });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const { page = 1, limit, sort, order, search, value } = req.query;
+    const tvshows = await Tvshow.find({ [search]: value })
+      .sort({ [sort]: order === "desc" ? -1 : 1 })
+      .limit(limit)
+      .skip((page - 1) * limit)
+      .select({ _id: 0, __v: 0, createdOn: 0 });
+    if (!tvshows)
+      return res.status(401).json({ message: "Couldn't get these shows" });
+    res
+      .status(200)
+      .json({ message: "Successfully fetched the tv-shows", tvshows });
+  } catch (error) {
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
-const getSingleTvshow = async (req, res) => {
+const getTvshow = async (req, res) => {
   try {
-    const tvshow = await Tvshow.findOne({ id: req.query.id });
+    const tvshow = await Tvshow.findOne(
+      { id: req.query.id },
+      { _id: 0, createdOn: 0 }
+    );
+    if (!tvshow)
+      return res
+        .status(404)
+        .json({ message: "There is no tv-show with this id.." });
+    res.status(200).json({ message: "Success!", tvshow });
+  } catch (error) {
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+  }
+};
+
+const updateTvshow = async (req, res) => {
+  try {
+    const tvshow = await Tvshow.findOneAndUpdate(
+      { id: req.query.id },
+      {
+        $set: {
+          title: req.body.title,
+          release: req.body.release,
+          seasons: req.body.seasons,
+          genre: req.body.genre,
+        },
+      },
+      { new: true }
+    );
     if (!tvshow) {
+      return res.status(400).json({ message: "Couldn't update this tv-show" });
+    }
+    res.status(201).json({ message: "The tv-show is updated", tvshow });
+  } catch (error) {
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+  }
+};
+
+const deleteTvshow = async (req, res) => {
+  try {
+    const tvshow = await Tvshow.deleteOne({ id: req.query.id });
+    if (tvshow.deletedCount === 0) {
       return res
         .status(400)
         .json({ message: "It seems like this tv-show doesn't exist" });
     }
-    res
-      .status(200)
-      .json({ message: "success: here is the tv-show you requested:", tvshow });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(201).json({ message: "The tv-show was deleted" });
+  } catch (error) {
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
@@ -44,53 +87,17 @@ const createTvshow = async (req, res) => {
         .status(400)
         .json({ message: "Something went wrong.. Try again later." });
     }
-    res.status(201).json({ message: "a tv-show is created" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-const deleteTvshow = async (req, res) => {
-  try {
-    const tvshow = await Tvshow.deleteOne({ id: req.query.id });
-    if (tvshow.deletedCount === 0) {
-      return res
-        .status(400)
-        .json({ message: "It seems like this tv-show doesn't exist" });
-    }
-    res.status(201).json({ message: "a tv-show is deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-const updateTvshow = async (req, res) => {
-  try {
-    const tvshow = await Tvshow.findOneAndUpdate(
-      { id: req.query.id },
-      {
-        $set: {
-          title: req.body.title,
-          release: req.body.release,
-          seasons: req.body.seasons,
-          genre: req.body.genre,
-        },
-      },
-      { new: true }
-    );
-    if(!tvshow) {
-      return res.status(401).json({message: "Couldn't update this tv-show"})
-    }
-    res.status(201).json({ message: "a tv-show is updated", tvshow });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(201).json({ message: "The tv-show is created" });
+  } 
+  catch (error) {
+    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
 module.exports = {
   getAllTvshows,
-  getSingleTvshow,
-  createTvshow,
-  deleteTvshow,
+  getTvshow,
   updateTvshow,
+  deleteTvshow,
+  createTvshow,
 };
