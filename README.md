@@ -7,6 +7,7 @@ Something fun to read before ins Bett gehen: [MongoDB Bible](https://www.mongodb
 GET:
  - all tv-shows: URL/tvshows
  - a single tv-show: URL/tvshow?id=<your_id>
+ - API documentation: URL/api-docs
 
 POST:
  - a new tv-show: URL/tvshows + json as req.body
