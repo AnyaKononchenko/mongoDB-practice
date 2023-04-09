@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const dev = require("./dev");
+const dev = require("./index");
 
 const connectDB = async () => {
   try {

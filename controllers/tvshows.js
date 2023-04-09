@@ -1,5 +1,108 @@
-const Tvshow = require("../models/tvshowModel");
+const Tvshow = require("../models/tvshows");
 const { v4: uuidv4 } = require("uuid");
+
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     Tvshow:
+ *       type: object
+ *       properties:
+ *         title:
+ *           type: string
+ *           example: The Last of Us
+ *         release:
+ *           type: integer
+ *           minimum: 1970
+ *           maximum: 2023
+ *           example: 2023
+ *         seasons:
+ *           type: integer
+ *           minimum: 1
+ *           example: 1
+ *         genre:
+ *           type: array
+ *           items:
+ *             type: string
+ *             enum: [ "Drama", "Sitcom", "Mystery", "Suspence", "Horror", "Thriller", "Anime", "Adventure", "Science Fiction","Fantasy","Comedy","Unknown"]
+ *           example: ["Drama"]
+ *       required:
+ *         - title
+ *         - release
+ *         - seasons
+ *         - genre
+ *     Message:
+ *       type: object
+ *       properties:
+ *         message: 
+ *           type: string
+ *           example: "Custom response from the server"
+ */
+
+/**
+ * @openapi
+ * tags: 
+ *   name: TV-shows
+ *   decription: A collection of TV-shows
+ */
+
+/**
+ * @openapi
+ * /tvshows :
+ *   get:
+ *     parameters:
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Sort order
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *           enum: [title, release, seasons, genre]
+ *         description: Search field
+ *       - in: query
+ *         name: value
+ *         schema:
+ *           type: string
+ *         description: Search parameter
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Number of page
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of documents per page
+ *     summary: get all tv-shows
+ *     tags: [TV-shows]
+ *     description: Returns all available documents in MongoDB
+ *     responses:
+ *       200:
+ *         description: OK.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Tvshow'
+ *       401:
+ *         description: Bad Request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ */
 
 const getAllTvshows = async (req, res) => {
   try {
@@ -15,10 +118,45 @@ const getAllTvshows = async (req, res) => {
       .status(200)
       .json({ message: "Successfully fetched the tv-shows", tvshows });
   } catch (error) {
-    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    res
+      .status(500)
+      .json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
+/**
+ * @openapi
+ * /tvshow :
+ *   get:
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: The ID of the tv-show to return
+ *     summary: get a single tv-show by ID
+ *     tags: [TV-shows]
+ *     description: Returns one tv-show based on ID
+ *     responses:
+ *       200:
+ *         description: OK.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tvshow'
+ *       404:
+ *         description: TV-show is not found.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ */
 const getTvshow = async (req, res) => {
   try {
     const tvshow = await Tvshow.findOne(
@@ -31,10 +169,50 @@ const getTvshow = async (req, res) => {
         .json({ message: "There is no tv-show with this id.." });
     res.status(200).json({ message: "Success!", tvshow });
   } catch (error) {
-    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    res
+      .status(500)
+      .json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
+/**
+ * @openapi
+ * /tvshow :
+ *   put:
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: The ID of the tv-show to be updated
+ *     summary: update a tv-show by ID
+ *     tags: [TV-shows]
+ *     description: Updates a tv-show based on ID
+ *     requestBody:
+ *       content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tvshow'
+ *     responses:
+ *       201:
+ *         description: OK.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tvshow'
+ *       400:
+ *         description: Bad Request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Internal Server Error.
+*         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ */
 const updateTvshow = async (req, res) => {
   try {
     const tvshow = await Tvshow.findOneAndUpdate(
@@ -54,10 +232,45 @@ const updateTvshow = async (req, res) => {
     }
     res.status(201).json({ message: "The tv-show is updated", tvshow });
   } catch (error) {
-    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    res
+      .status(500)
+      .json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
+/**
+ * @openapi
+ * /tvshow :
+ *   delete:
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: The ID of the tv-show to be deleted
+ *     summary: delete a tv-show by ID
+ *     tags: [TV-shows]
+ *     description: Deletes a tv-show based on ID
+ *     responses:
+ *       201:
+ *         description: OK.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       400:
+ *         description: Bad Request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ */
 const deleteTvshow = async (req, res) => {
   try {
     const tvshow = await Tvshow.deleteOne({ id: req.query.id });
@@ -68,10 +281,45 @@ const deleteTvshow = async (req, res) => {
     }
     res.status(201).json({ message: "The tv-show was deleted" });
   } catch (error) {
-    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    res
+      .status(500)
+      .json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 
+/**
+ * @openapi
+ * /tvshows :
+ *   post:
+ *     summary: create a tv-show
+ *     tags: [TV-shows]
+ *     description: Creates a new tv-show
+ *     requestBody:
+ *       required: true
+ *       content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tvshow'
+ *     responses:
+ *       201:
+ *         description: Created.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Tvshow'
+ *       400:
+ *         description: Bad Request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ *       500:
+ *         description: Internal Server Error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Message'
+ */
 const createTvshow = async (req, res) => {
   try {
     const tvshow = new Tvshow({
@@ -87,10 +335,11 @@ const createTvshow = async (req, res) => {
         .status(400)
         .json({ message: "Something went wrong.. Try again later." });
     }
-    res.status(201).json({ message: "The tv-show is created" });
-  } 
-  catch (error) {
-    res.status(500).json({ message: `Internal Server Error: ${error.message}` });
+    res.status(201).json({ message: "The tv-show is created", tvshow });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: `Internal Server Error: ${error.message}` });
   }
 };
 

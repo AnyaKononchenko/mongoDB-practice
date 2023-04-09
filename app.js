@@ -6,12 +6,30 @@ const { urlencoded } = require("body-parser");
 const dev = require("./config");
 const connectDB = require("./config/database");
 
-const tvshowsRouter = require("./routes/tvshows");
-const appRouter = require("./routes/appController");
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
+const tvshowsRouter = require("./routes/tvshows");
+const appRouter = require("./routes/appRoutes");
 
 const app = express();
 const port = dev.app.serverPort;
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "TV-shows API",
+      description: "Contains a list of TV-shows",
+      version: "1.0.0",
+    },
+    servers: [{ url: `http://localhost:${port}` }],
+  },
+  apis: ["./controllers/*.js"],
+};
+
+const openapiSpecification = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 
 app.use(cors());
 app.use(morgan("dev"));
